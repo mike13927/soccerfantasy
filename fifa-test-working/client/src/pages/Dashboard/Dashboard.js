@@ -11,10 +11,12 @@ import MessageList from '../../components/MessageList'
 import CreatePlayer from '../../pages/CreatePlayer'
 import PlayerList from '../../components/PlayerList'
 import MyPlayerList from '../../components/MyPlayerList'
+import TeamList from '../../components/TeamList'
 
 class Dashboard extends Component {
   state = {
       user: {},
+      users: [],
       players: [],
       myPlayers: [],
       team: {}
@@ -41,6 +43,7 @@ class Dashboard extends Component {
   }
 
   updatePlayers() {
+    console.log("************ Updating state...");
     const user = AuthInterface.getUser()
     console.log(user);
     // Find or create the teams
@@ -71,6 +74,12 @@ class Dashboard extends Component {
       this.setState({ players: res.data })
     })
     .catch(console.error)
+    console.log("************ Getting users...");
+    API.getUsers().then( res => {
+      console.log(res);
+      this.setState({ users: res.data.users })
+    })
+    .catch(console.error)
 
   }
 
@@ -81,8 +90,10 @@ class Dashboard extends Component {
               <CreatePlayer updatePlayers={this.updatePlayers.bind(this)}/>
             </Row>
             <Row>
-              <h2>Select Players</h2>
-              <PlayerList players={this.state.players} addPlayer={this.addPlayer.bind(this)}/>
+              <Col size="md-12">
+                <h2>Select Players</h2>
+                <PlayerList players={this.state.players} addPlayer={this.addPlayer.bind(this)}/>
+              </Col>
             </Row>
           <Row>
             <Col size="md-12">
@@ -92,14 +103,8 @@ class Dashboard extends Component {
           </Row>
           <Row>
             <Col size="md-6">
-            <h2>Select Match Team</h2>
-            
-            <FormBtn
-              // disabled={!(this.state.players && this.state.title)}
-              onClick={this.handleFormSubmit}
-            >
-              Play Match!
-            </FormBtn>
+              <h2>Play Teams</h2>
+              <TeamList users={this.state.users}/>
             </Col>
           </Row>
         </Container>

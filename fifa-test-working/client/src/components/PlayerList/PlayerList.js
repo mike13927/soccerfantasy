@@ -19,22 +19,22 @@ class PlayerList extends Component {
       <div>
         {
           players.length ? (
-            <div style={{ left: '41%', overflowY: 'scroll' }}>
+            <div style={{ left: '41%', overflow: 'none' }}>
               {
                 players.map( player => (
                   <div key={ player.id }  className='row'>
                       <div className='text-left col-md-7 col-md-offset-1'
-                            style={{ paddingTop: 2, paddingBottom: 2, marginTop: 2, marginBottom: 2, borderRadius: 10 }}>
-                            <strong>{ player.name }</strong>
+                            style={{ paddingTop: 2, paddingBottom: 2, paddingRight: 20, marginTop: 2, marginBottom: 2, borderRadius: 10 }}>
+                            <strong style={{ paddingRight: 20 }}>{ player.name }</strong>
+                            <AddBtn id={player.id} onClick={this.addPlayer.bind(this)}/>
                       </div>
-                      <AddBtn id={player.id} onClick={this.addPlayer.bind(this)}/>
                   </div>
                 ))
               }
             </div>
           ) : (
             <h2 className='text-center alert alert-warning'>
-              No Players
+              No Players to pick.  Create more players.
             </h2>
           )
         }
