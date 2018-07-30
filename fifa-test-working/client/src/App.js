@@ -13,18 +13,12 @@ const App = () => (
   <Router>
     <div>
       <Nav />
-
       <Switch>
-
         <Route exact path='/login' component={ Auth } />
-
         <PrivateRoute exact path='/' component={ Dashboard } />
         <PrivateRoute exact path='/conversation/new' component={ CreateConversation } />
-
         <Route component={ NoMatch } />
-
       </Switch>
-
     </div>
   </Router>
 )

@@ -48,6 +48,7 @@ module.exports = function(sequelize, DataTypes) {
     User.belongsToMany(models.Conversation, {
       through: 'UserTeam'
     })
+    User.hasOne(models.Team)
 
   }
 

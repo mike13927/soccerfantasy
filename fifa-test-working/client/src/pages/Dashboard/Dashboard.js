@@ -8,65 +8,92 @@ import { Col, Row, Container } from '../../components/Grid'
 import { List, ListItem } from '../../components/List'
 import { Input, FormBtn } from '../../components/Form'
 import MessageList from '../../components/MessageList'
+import CreatePlayer from '../../pages/CreatePlayer'
+import PlayerList from '../../components/PlayerList'
+import MyPlayerList from '../../components/MyPlayerList'
 
 class Dashboard extends Component {
   state = {
-      user: {}
+      user: {},
+      players: [],
+      myPlayers: [],
+      team: {}
   };
-  
-  
+
+  componentDidMount() {
+    this.updatePlayers()
+  }
+
+  addPlayer(playerId) {
+    const user = AuthInterface.getUser()
+    API.addPlayerToTeam(user.id, playerId).then(res => {
+        console.log("Added player to team");
+        this.updatePlayers()
+    })
+  }
+
+  removePlayer(playerId) {
+    const user = AuthInterface.getUser()
+    API.removePlayerFromTeam(user.id, playerId).then(res => {
+        console.log("Removing player from team");
+        this.updatePlayers()
+    })
+  }
+
+  updatePlayers() {
+    const user = AuthInterface.getUser()
+    console.log(user);
+    // Find or create the teams
+    API.getMyTeam(user.id).then (res => {
+      const team = res.data;
+      console.log("Team: ", res);
+      if (!team) {
+        console.log("Creating team...");
+        API.createMyTeam({uid: user.id, title: user.username}).then(res => {
+            console.log("Created team");
+            this.setState({ team: res.data })
+            API.getMyPlayers(user.id).then( res => {
+              this.setState({ myPlayers: res.data })
+            })
+            .catch(console.error)
+        })
+      }
+      else {
+        this.setState({ team: res.data })
+        API.getMyPlayers(user.id).then( res => {
+          console.log("My players: ", res.data)
+          this.setState({ myPlayers: res.data })
+        })
+        .catch(console.error)
+      }
+    })
+    API.getPlayers().then( res => {
+      this.setState({ players: res.data })
+    })
+    .catch(console.error)
+
+  }
+
     render() {
         return (
           <Container fluid>
-          <Row>
-            <Col size="md-12">
-            <h2>Select 2 Players</h2>
-            <input
-            placeholder="Cristiano Ronaldo"
-            />
-            <input
-            placeholder="Lionel Messi"
-            />
-            <input
-            placeholder="Neymar"
-            />
-            <input
-            placeholder="Sergio Ramos"
-            />
-            <input
-            placeholder="Thiago Silva"
-            />
-            <input
-            placeholder="Gerard Pique"
-            />
-            <input
-            placeholder="Casemiro"
-            />
-            <input
-            placeholder="Paul Pogba"
-            />
-            <input
-            placeholder="Luka Modric"
-            />
-            <input
-            placeholder="Kevin de Bruyne"
-            />
-            <input
-            placeholder="Manuel Neuer"
-            />
-            <input
-            placeholder="David de Gea"
-            />
-            
-            </Col>
-          </Row>
+            <Row>
+              <CreatePlayer updatePlayers={this.updatePlayers.bind(this)}/>
+            </Row>
+            <Row>
+              <h2>Select Players</h2>
+              <PlayerList players={this.state.players} addPlayer={this.addPlayer.bind(this)}/>
+            </Row>
           <Row>
             <Col size="md-12">
             <h2>My Players</h2>
+            <MyPlayerList players={this.state.myPlayers} removePlayer={this.removePlayer.bind(this)}/>
             </Col>
           </Row>
           <Row>
             <Col size="md-6">
+            <h2>Select Match Team</h2>
+            
             <FormBtn
               // disabled={!(this.state.players && this.state.title)}
               onClick={this.handleFormSubmit}
@@ -74,8 +101,8 @@ class Dashboard extends Component {
               Play Match!
             </FormBtn>
             </Col>
-          </Row>        
-        </Container>    
+          </Row>
+        </Container>
         );
     }
 }

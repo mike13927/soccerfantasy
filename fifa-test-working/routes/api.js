@@ -25,7 +25,7 @@ module.exports = app => {
       const findOptions = {
         where: {
           id: {
-            // This little bit of syntax `[Op.ne]` is another new feature: 
+            // This little bit of syntax `[Op.ne]` is another new feature:
             // "Computed property names in object literals"
             // Which just means that it will evaluate the expression inside
             // the square brackets and whatever it evaluates to will be the
@@ -43,7 +43,7 @@ module.exports = app => {
               var name = 'David'
               var obj = { [ name ]: 'Some goober' }
             */
-            
+
             [Op.ne]: req.user.id
           }
         }
@@ -85,11 +85,105 @@ module.exports = app => {
   })
   */
 
-  //
-  //
-  // conversations
-  //
-  //
+  app.get('/players', async function(req, res) {
+    try {
+      const findOptions = {
+        where: {
+          TeamId: null
+        }
+      }
+      const players = await db.Player.findAll(findOptions);
+      res.json(players)
+    }
+    catch (err) {
+      console.log('Error getting players: ', err)
+      res.status(500).send('Error getting players')
+    }
+  })
+
+  app.post('/players', async function(req, res) {
+    const { name } = req.body
+    try {
+      const player = await db.Player.create({ name })
+      res.json(player)
+    }
+    catch (err) {
+      console.log('Error creating player: ', err)
+      res.status(500).send('Error creating player')
+    }
+  })
+
+  app.get('/myplayers/:uid', async function(req, res) {
+    try {
+      const user = await db.User.findOne({ where: { id: req.params.uid }})
+      const team = await user.getTeam()
+      const players = await team.getPlayers();
+      res.json(players)
+    }
+    catch (err) {
+      console.log('Error getting players: ', err)
+      res.status(500).send('Error getting players')
+    }
+  })
+
+  app.get('/myteam/:uid', async function(req, res) {
+    try {
+      const user = await db.User.findOne({ where: { id: req.params.uid }})
+      const team = await user.getTeam();
+      res.json(team);
+    }
+    catch (err) {
+      console.log('Error getting team: ', err)
+      res.status(500).send('Error getting team')
+    }
+  })
+
+  app.post('/addplayertoteam', async function(req, res) {
+    const { uid, pid } = req.body
+    try {
+      const user = await db.User.findOne({ where: { id: uid }})
+      const team = await user.getTeam()
+      const players = await team.getPlayers();
+      if (players.length < 5) {
+        const player = await db.Player.findOne({ where: { id: pid }})
+        await player.update({TeamId: team.id})
+      }
+      res.json({success: true})
+    }
+    catch (err) {
+      console.log('Error adding player to team: ', err)
+      res.status(500).send('Error adding player to team')
+    }
+  })
+
+  app.post('/removeplayerfromteam', async function(req, res) {
+    const { uid, pid } = req.body
+    try {
+      const user = await db.User.findOne({ where: { id: uid }})
+      const team = await user.getTeam()
+      const player = await db.Player.findOne({ where: { id: pid }})
+      await player.update({TeamId: null})
+      res.json({success: true})
+    }
+    catch (err) {
+      console.log('Error removing player from team: ', err)
+      res.status(500).send('Error removing player from team')
+    }
+  })
+
+  app.post('/myteam', async function(req, res) {
+    const { title, uid } = req.body
+    try {
+      const user = await db.User.findOne({ where: { id: uid }})
+      const team = await db.Team.create({title: title})
+      user.setTeam(team)
+      res.json(team)
+    }
+    catch (err) {
+      console.log('Error creating team for user: ', err)
+      res.status(500).send('Error creating team for user')
+    }
+  })
 
   app.get('/conversations', async function(req, res) {
 
@@ -151,7 +245,7 @@ module.exports = app => {
   //
 
   app.post('/messages', async function(req, res) {
-    
+
     try {
       const message = await db.Message.create(req.body)
 
